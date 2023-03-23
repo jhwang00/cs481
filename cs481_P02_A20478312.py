@@ -26,7 +26,7 @@ def preprocessLC(text): #lowercase
 
 def preprocessStem(text): #stemming
     stemmer = nltk.stem.LancasterStemmer()
-    text = text.split()
+    text = text
     stemmedWord = []
     for w in text:
         stemmedWord.append(stemmer.stem(w))
@@ -41,37 +41,48 @@ def preprocessStop(text): #stopwords
     filtered_text = [w for w in text if not w.lower() in removal_list]
     return filtered_text
 
-def vocabb():
-    s = input("Enter sentence or type 'end': ")
-    if s == 'end':
-        print(vocab)
-        tot = 0
-        for k in range(len(vocab)):
-            tot += vocab[k][1]
-        print(tot)
-        return
-    else:
-        s = s.split()
-        for i in range(len(s)):
-            if vocab == []:
-                vocab.append([s[i],1])
-            else:
+def vocabb(text):
+    for i in range(len(text)):
+        for j in range(len(text[i])):
+            if not vocab:
                 exists = 0
                 for j in range(len(vocab)):
-                    if s[i] == vocab[j][0]:
+                    if text[i][j] in vocab:
                         exists = 1
-                        vocab[j][1] += 1
-                if exists != 1:
-                    vocab.append([s[i], 1])
-        #print(vocab)
-        vocabb()
+                if exists == 0:
+                    vocab.append(text[i][j])
+            else:
+                vocab.append(text[i][j])
+
+def positive(text): #count as dictionary
+    #for i in range(len(text)):
+    #    for j in range(len(text[i])):
+    #        if not vocab:
+    #            exists = 0
+    #            for j in range(len(vocab)):
+    #                if text[i][j] in vocab.keys():
+    #                    exists = 1
+    #            if exists == 0:
+    #                vocab[text[i][j]] = 1
+    #        else:
+    #            vocab[text[i][j]] = 1
+    pass
+
+def neutral():
+    pass
+
+def negative():
+    pass
 
 def main():
     l = []
     for i in range(1, 3):
-        l.append(preprocessStop((preprocessLC(t[i][10]))))
-
+        l.append(preprocessStop(preprocessStem(preprocessLC(t[i][10]))))
     print(l)
+    vocabb(l)
+    print(vocab)
+
+    #print(l)
     #print(preprocessStop(l))
     #try:
     #    arg = sys.argv[1]
