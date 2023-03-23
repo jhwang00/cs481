@@ -1,6 +1,7 @@
 import csv
 import sys
 import nltk
+from nltk.corpus import stopwords
 
 t = []
 vocab = []
@@ -18,11 +19,26 @@ with open ('Tweets.csv', 'r', encoding='utf-8') as csv_file:
 
 # int((len(t[i])-1)*80/100)
 
-def preprocess(text): #lowercase, stopwords, stemming
-    t = text.lower()
+def preprocessLC(text): #lowercase
+    corp = text.lower()
+    return corp
+
+def preprocessStem(text): #stopwords, stemming
     stemmer = nltk.stem.LancasterStemmer()
-    for word in text:
-        stemmedWord = stemmer.stem(word)
+    text = text.split()
+    stemmedWord = []
+    for w in text:
+        stemmedWord.append(stemmer.stem(w))
+    return stemmedWord
+
+def preprocessStop(text):
+    # Stopword Removal
+    stop_words = set(stopwords.words('english'))
+    removal_list = list(stop_words) + ['lt','rt']
+    # converts the words in text to lower case and then checks whether 
+    #they are present in stop_words or not
+    filtered_text = [w for w in text if not w.lower() in removal_list]
+    return filtered_text
 
 def vocabb():
     s = input("Enter sentence or type 'end': ")
@@ -50,13 +66,19 @@ def vocabb():
         vocabb()
 
 def main():
-    try:
-        arg = sys.argv[1]
-        if arg == 'NO':
-            pass # do stemming 
-    except:
-        pass # skip stemming
-        print("\nERROR: Not enough or too many input arguments.\n")
+    l = []
+    for i in range(1, 3):
+        l.append(preprocessStop(preprocessStem(preprocessLC(t[i][10]))))
+
+    print(l)
+    #print(preprocessStop(l))
+    #try:
+    #    arg = sys.argv[1]
+    #    if arg == 'NO':
+    #        pass # do stemming
+    #except:
+    #    pass # skip stemming
+    #    print("\nERROR: Not enough or too many input arguments.\n")
     
 
 main()
