@@ -2,6 +2,7 @@ import csv
 import sys
 import nltk
 from nltk.corpus import stopwords
+#import string
 
 t = []
 vocab = []
@@ -20,10 +21,10 @@ with open ('Tweets.csv', 'r', encoding='utf-8') as csv_file:
 # int((len(t[i])-1)*80/100)
 
 def preprocessLC(text): #lowercase
-    corp = text.lower()
+    corp = text.lower().split()
     return corp
 
-def preprocessStem(text): #stopwords, stemming
+def preprocessStem(text): #stemming
     stemmer = nltk.stem.LancasterStemmer()
     text = text.split()
     stemmedWord = []
@@ -31,7 +32,7 @@ def preprocessStem(text): #stopwords, stemming
         stemmedWord.append(stemmer.stem(w))
     return stemmedWord
 
-def preprocessStop(text):
+def preprocessStop(text): #stopwords
     # Stopword Removal
     stop_words = set(stopwords.words('english'))
     removal_list = list(stop_words) + ['lt','rt']
@@ -68,7 +69,7 @@ def vocabb():
 def main():
     l = []
     for i in range(1, 3):
-        l.append(preprocessStop(preprocessStem(preprocessLC(t[i][10]))))
+        l.append(preprocessStop((preprocessLC(t[i][10]))))
 
     print(l)
     #print(preprocessStop(l))
