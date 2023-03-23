@@ -6,6 +6,10 @@ from nltk.corpus import stopwords
 
 t = []
 vocab = []
+pos = []
+neut = []
+neg = []
+
 with open ('Tweets.csv', 'r', encoding='utf-8') as csv_file:
     csv_data = csv.reader(csv_file)
     print(csv_data)
@@ -18,7 +22,7 @@ with open ('Tweets.csv', 'r', encoding='utf-8') as csv_file:
 # t[i][1] ::sentiment
 # t[i][10] ::text
 
-# int((len(t[i])-1)*80/100)
+# int((len(t)-1)*80/100)
 
 def preprocessLC(text): #lowercase
     corp = text.lower().split()
@@ -41,7 +45,7 @@ def preprocessStop(text): #stopwords
     filtered_text = [w for w in text if not w.lower() in removal_list]
     return filtered_text
 
-def vocabb(text):
+def vocabb(text): #extracting vocab list from training set(text)
     for i in range(len(text)):
         for j in range(len(text[i])):
             if not vocab:
@@ -54,19 +58,22 @@ def vocabb(text):
             else:
                 vocab.append(text[i][j])
 
-def positive(text): #count as dictionary
-    #for i in range(len(text)):
-    #    for j in range(len(text[i])):
-    #        if not vocab:
-    #            exists = 0
-    #            for j in range(len(vocab)):
-    #                if text[i][j] in vocab.keys():
-    #                    exists = 1
-    #            if exists == 0:
-    #                vocab[text[i][j]] = 1
-    #        else:
-    #            vocab[text[i][j]] = 1
+#need number of pos/neut/neg
+#need to count of occurence of each words in pos/neut/neg
+#count total words (1s in bag of words)
+
+def bow():
     pass
+
+def positive(text): #input every positive
+    for i in range(len(text)):
+        for j in range(len(text[i])):
+            exists = 0
+            if text[i][j] in vocab:
+                exists = 1
+            if exists == 0:
+                vocab[text[i][j]] = 1
+    return # tot num etc as list
 
 def neutral():
     pass
@@ -76,11 +83,16 @@ def negative():
 
 def main():
     l = []
-    for i in range(1, 3):
+    for i in range(1, int((len(t)-1)*80/100)):
         l.append(preprocessStop(preprocessStem(preprocessLC(t[i][10]))))
-    print(l)
     vocabb(l)
     print(vocab)
+    print(int((len(t)-1)*80/100))
+
+    #preprocess
+    #train based on t[i][1]::sentiment
+    #train
+    #
 
     #print(l)
     #print(preprocessStop(l))
