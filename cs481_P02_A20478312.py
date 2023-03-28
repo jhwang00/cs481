@@ -6,9 +6,6 @@ from sklearn.feature_extraction.text import CountVectorizer
 #import string
 
 t = []
-pos = []
-neut = []
-neg = []
 
 with open ('Tweets.csv', 'r', encoding='utf-8') as csv_file:
     csv_data = csv.reader(csv_file)
@@ -49,14 +46,7 @@ def vocabb(text): #extracting vocab list from training set(text)
     vocab = []
     for i in range(len(text)):
         for j in range(len(text[i])):
-            if not vocab:
-                exists = 0
-                for j in range(len(vocab)):
-                    if text[i][j] in vocab:
-                        exists = 1
-                if exists == 0:
-                    vocab.append(text[i][j])
-            else:
+            if text[i][j] not in vocab:
                 vocab.append(text[i][j])
     return vocab
 
@@ -76,28 +66,75 @@ def bow(voca, sentence):
             dict[voca[j]] = 1 
     return dict
 
-def positive(text): #input every positive
-    pass
+#def count(voca, sentence):
+#    l = []
+#    for j in range(len(voca)):
+#        exists = 0
+#        if voca[j] in sentence:
+#            exists = 1
+#        if exists == 0:
+#            l.append(0)
+#        else:
+#            l.append(1)
+#    return l
 
-def neutral():
-    pass
+def positive(word, voca, pos): #input every positive (word, vocabulary, sentence list)
+    bag_of_words = []
+    for i in range(len(pos)):
+        bag_of_words.append(bow(voca, pos[i]))
+    pos_count = len(voca)
+    for i in range(len(pos)):
+        pos_count += len(pos[i])
+    #k = 0
+    #for k in range(len(voca)):
+    #    if voca[k] == word:
+    #        break
+    num = 1
+    for i in range(len(bag_of_words)):
+        if bag_of_words[i][word] == 1:
+            num+=1
+    return num/pos_count
 
-def negative():
-    pass
+def negative(voca, neg):
+    neg_count = 0
+    for i in range(len(neg)):
+        neg_count += len(neg[i])
+
+def neutral(voca, neu):
+    neu_count = 0    
+    for i in range(len(neu)):
+        neu_count += len(neu[i])
 
 def main():
-    voca = [] #vocabulary list
+    n = 11 #int((len(t)-1)*80/100)
     l = [] #test set list
-    for i in range(1, 6):
+    pos = []
+    neu = []
+    neg = []
+    for i in range(1, n):
         l.append(preprocessStop(preprocessStem(preprocessLC(t[i][10]))))
-        voca.append(preprocessStop(preprocessStem(preprocessLC(t[i][10]))))
-    #print(l)
-    #bag_of_words(t[i][10])
-    vocabulary = vocabb(voca)
-    #print(vocabulary)
-    for i in range(len(l)):
-        print(bow(vocabulary, l[i]))
-    #print(int((len(t)-1)*80/100))
+    vocabulary = vocabb(l)
+    for i in range(1, n):
+        if t[i][1] == 'positive':
+            pos.append(preprocessStop(preprocessStem(preprocessLC(t[i][10]))))
+        elif t[i][1] == 'negative':
+            neg.append(preprocessStop(preprocessStem(preprocessLC(t[i][10]))))
+        else:
+            neu.append(preprocessStop(preprocessStem(preprocessLC(t[i][10]))))
+    
+    print(positive('@virginamerica', vocabulary, pos))
+
+    #P(pos) = len(pos)/len(l)
+    #P(neg) = len(neg)/len(l)
+    #P(neu) = len(neu)/len(l)
+
+#positive
+#negative
+#neutral
+# t[0] :: column name
+# t[i][1] ::sentiment
+# t[i][10] ::text
+    
 
     #preprocess
     #train based on t[i][1]::sentiment
