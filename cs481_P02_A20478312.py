@@ -64,36 +64,17 @@ def vocabb(text): #extracting vocab list from training set(text)
 #need to count of occurence of each words in pos/neut/neg
 #count total words (1s in bag of words)
 
-def bag_of_words(data, vocab):
-    # Takes vocabulary list as additional input
-    # Extract the text and labels from dataframe
-    X_text = data['text']
-    y = data['airline_sentiment']
-    
-    # Create a CountVectorizer object and fit it to the training data
-    if vocab is None:
-        vectorizer = CountVectorizer()
-    else:
-        vectorizer = CountVectorizer(vocab = vocab)
-    vectorizer.fit(X_text)
-    
-    # Convert text data to a Bag of Words representation
-    X = vectorizer.transform(X_text)
-    
-    return X, y, vectorizer.get_feature_names()
-
 def bow(voca, sentence):
     dict = {}
-    for i in range(len(sentence)):
+    for j in range(len(voca)):
         exists = 0
-        if sentence[i] in voca and sentence[i] not in dict:
+        if voca[j] in sentence:
             exists = 1
         if exists == 0:
-            dict[sentence[i]] = 0
+            dict[voca[j]] = 0
         else:
-            dict[sentence[i]] = 1 
+            dict[voca[j]] = 1 
     return dict
-    # tot num etc as list
 
 def positive(text): #input every positive
     pass
@@ -105,16 +86,17 @@ def negative():
     pass
 
 def main():
-    voca = []
-    l = []
-    for i in range(1, 11):
+    voca = [] #vocabulary list
+    l = [] #test set list
+    for i in range(1, 6):
         l.append(preprocessStop(preprocessStem(preprocessLC(t[i][10]))))
         voca.append(preprocessStop(preprocessStem(preprocessLC(t[i][10]))))
+    #print(l)
     #bag_of_words(t[i][10])
-    #print(vocabb(voca))
+    vocabulary = vocabb(voca)
+    #print(vocabulary)
     for i in range(len(l)):
-        #print(bag_of_words(l[i], voca))
-        print(bow(voca, l[i]))
+        print(bow(vocabulary, l[i]))
     #print(int((len(t)-1)*80/100))
 
     #preprocess
