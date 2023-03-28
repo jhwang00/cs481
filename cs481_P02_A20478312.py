@@ -85,20 +85,17 @@ def positive(word, voca, pos): #input every positive (word, vocabulary, sentence
     pos_count = len(voca)
     for i in range(len(pos)):
         pos_count += len(pos[i])
-    #k = 0
-    #for k in range(len(voca)):
-    #    if voca[k] == word:
-    #        break
     num = 1
     for i in range(len(bag_of_words)):
         if bag_of_words[i][word] == 1:
             num+=1
     return num/pos_count
 
-def negative(voca, neg):
+def negative(word, voca, neg):
     neg_count = 0
     for i in range(len(neg)):
         neg_count += len(neg[i])
+    
 
 def neutral(voca, neu):
     neu_count = 0    
