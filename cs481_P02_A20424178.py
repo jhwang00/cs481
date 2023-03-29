@@ -92,15 +92,31 @@ def positive(word, voca, pos): #input every positive (word, vocabulary, sentence
     return num/pos_count
 
 def negative(word, voca, neg):
-    neg_count = 0
+    bag_of_words = []
+    for i in range(len(neg)):
+        bag_of_words.append(bow(voca, neg[i]))
+    neg_count = len(voca)
     for i in range(len(neg)):
         neg_count += len(neg[i])
+    num = 1
+    for i in range(len(bag_of_words)):
+        if bag_of_words[i][word] == 1:
+            num+=1
+    return num/neg_count
     
 
-def neutral(voca, neu):
-    neu_count = 0    
+def neutral(word, voca, neu):
+    bag_of_words = []
+    for i in range(len(neu)):
+        bag_of_words.append(bow(voca, neu[i]))
+    neu_count = len(voca)
     for i in range(len(neu)):
         neu_count += len(neu[i])
+    num = 1
+    for i in range(len(bag_of_words)):
+        if bag_of_words[i][word] == 1:
+            num+=1
+    return num/neu_count
 
 def main():
     n = 11 #int((len(t)-1)*80/100)
@@ -110,16 +126,15 @@ def main():
     neg = []
     
     for i in range(1, n):
-        cleaned_text = preprocessStop(preprocessStem(preprocessLC(t[i][10])))
-        l.append(cleaned_text)
+        l.append(preprocessStop(preprocessStem(preprocessLC(t[i][10]))))
     vocabulary = vocabb(l)
     for i in range(1, n):
         if t[i][1] == 'positive':
-            pos.append(cleaned_text)
+            pos.append(preprocessStop(preprocessStem(preprocessLC(t[i][10]))))
         elif t[i][1] == 'negative':
-            neg.append(cleaned_text)
+            neg.append(preprocessStop(preprocessStem(preprocessLC(t[i][10]))))
         else:
-            neu.append(cleaned_text)
+            neu.append(preprocessStop(preprocessStem(preprocessLC(t[i][10]))))
     
     print(positive('@virginamerica', vocabulary, pos))
 
