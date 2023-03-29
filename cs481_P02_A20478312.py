@@ -12,14 +12,7 @@ with open ('Tweets.csv', 'r', encoding='utf-8') as csv_file:
     print(csv_data)
     for data in csv_data:
         t.append(data)
-#positive
-#negative
-#neutral
-# t[0] :: column name
-# t[i][1] ::sentiment
-# t[i][10] ::text
 
-# int((len(t)-1)*80/100)
 
 def preprocessLC(text): #lowercase
     corp = text.lower().split()
@@ -50,10 +43,6 @@ def vocabb(text): #extracting vocab list from training set(text)
                 vocab.append(text[i][j])
     return vocab
 
-#need number of pos/neut/neg
-#need to count of occurence of each words in pos/neut/neg
-#count total words (1s in bag of words)
-
 def bow(voca, sentence):
     dict = {}
     for j in range(len(voca)):
@@ -66,19 +55,7 @@ def bow(voca, sentence):
             dict[voca[j]] = 1 
     return dict
 
-#def count(voca, sentence):
-#    l = []
-#    for j in range(len(voca)):
-#        exists = 0
-#        if voca[j] in sentence:
-#            exists = 1
-#        if exists == 0:
-#            l.append(0)
-#        else:
-#            l.append(1)
-#    return l
-
-def positive(word, voca, pos): #input every positive (word, vocabulary, sentence list)
+def positive(word, voca, pos): #input every positive (word, vocabulary, sentence list) returns p(word|pos)
     bag_of_words = []
     for i in range(len(pos)):
         bag_of_words.append(bow(voca, pos[i]))
@@ -92,38 +69,112 @@ def positive(word, voca, pos): #input every positive (word, vocabulary, sentence
     return num/pos_count
 
 def negative(word, voca, neg):
+    bag_of_words = []
+    for i in range(len(neg)):
+        bag_of_words.append(bow(voca, neg[i]))
     neg_count = 0
     for i in range(len(neg)):
         neg_count += len(neg[i])
-    
+    num = 1
+    for i in range(len(bag_of_words)):
+        if bag_of_words[i][word] == 1:
+            num+=1
+    return num/neg_count
 
-def neutral(voca, neu):
+def neutral(word, voca, neu):
+    bag_of_words = []
+    for i in range(len(neu)):
+        bag_of_words.append(bow(voca, neu[i]))
     neu_count = 0    
     for i in range(len(neu)):
         neu_count += len(neu[i])
+    num = 1
+    for i in range(len(bag_of_words)):
+        if bag_of_words[i][word] == 1:
+            num+=1
+    return num/neu_count
+
+def matrix(mat_1, mat_2, mat_3, real_value, classified_value):
+    if classified_value =='positive':
+        if real_value == 'positive':
+            mat_1[1] += 1
+        elif real_value == 'negative':
+            mat_1[2] += 1
+        else:
+            mat_1[3] += 1
+    elif classified_value == 'negative':
+        if real_value == 'positive':
+            mat_2[1] += 1
+        elif real_value == 'negative':
+            mat_2[2] += 1
+        else:
+            mat_2[3] += 1
+    else:
+        if real_value == 'positive':
+            mat_3[1] += 1
+        elif real_value == 'negative':
+            mat_3[2] += 1
+        else:
+            mat_3[3] += 1
 
 def main():
-    n = 11 #int((len(t)-1)*80/100)
-    l = [] #test set list
+    n = int((len(t)-1)*80/100)
+    boundary = int((len(t)-1)*80/100)
+    train_set = [] #train set list
+    test_set = [] #test set list
     pos = []
     neu = []
     neg = []
+
+    mat_0 = ["system\\real", "positive", "negative", "neutral"]
+    mat_1 = ["positive", 0, 0, 0]
+    mat_2 = ["negative", 0, 0, 0]
+    mat_3 = ["neutral", 0, 0, 0]
+
     for i in range(1, n):
-        l.append(preprocessStop(preprocessStem(preprocessLC(t[i][10]))))
-    vocabulary = vocabb(l)
+        cleaned_train = preprocessStop(preprocessStem(preprocessLC(t[i][10])))
+        train_set.append(cleaned_train)
+    vocabulary = vocabb(train_set)
     for i in range(1, n):
         if t[i][1] == 'positive':
-            pos.append(preprocessStop(preprocessStem(preprocessLC(t[i][10]))))
+            pos.append(cleaned_train)
         elif t[i][1] == 'negative':
-            neg.append(preprocessStop(preprocessStem(preprocessLC(t[i][10]))))
+            neg.append(cleaned_train)
         else:
-            neu.append(preprocessStop(preprocessStem(preprocessLC(t[i][10]))))
-    
-    print(positive('@virginamerica', vocabulary, pos))
+            neu.append(cleaned_train)
+    prob_pos = len(pos)/len(train_set)
+    prob_neg = len(neg)/len(train_set)
+    prob_neu = len(neu)/len(train_set)
 
-    #P(pos) = len(pos)/len(l)
-    #P(neg) = len(neg)/len(l)
-    #P(neu) = len(neu)/len(l)
+    for i in range(boundary+1, len(t)):
+        cleaned_test = preprocessStop(preprocessStem(preprocessLC(t[i][10])))
+        test_set.append(cleaned_test)
+    for i in range(boundary+1, len(t)): # test set tesing  len(t)
+        is_pos = prob_pos
+        is_neg = prob_neg
+        is_neu = prob_neu
+        index = i-1-boundary
+        for j in range(len(test_set[index])): #positive probability
+            is_pos = is_pos * positive(test_set[index][j], vocabulary, pos)
+        for j in range(len(test_set[index])): #negative probability
+            is_neg = is_neg * positive(test_set[index][j], vocabulary, neg)
+        for j in range(len(test_set[index])): #neutral probability
+            is_neu = is_neu * positive(test_set[index][j], vocabulary, neu)
+
+        classification = max(is_pos, is_neg, is_neu) # classification based on trained set
+
+        matrix(mat_1, mat_2, mat_3, t[i][1], classification) # put it in confusion matrix
+    
+    print(mat_0)
+    print(mat_1)
+    print(mat_2)
+    print(mat_3)
+        #compare with real value
+        #if TP, TN, FP, FN
+        #calculate recall, specificity, etc
+
+        #keyboard input(single sentence)
+    
 
 #positive
 #negative
