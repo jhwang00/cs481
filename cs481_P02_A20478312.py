@@ -166,19 +166,19 @@ def main():
         is_neu = math.log(prob_neu)
         index = i-1-boundary
         for j in range(len(test_set[index])): #positive probability
-            is_pos = is_pos + positive(test_set[index][j], vocabulary, pos)
+            is_pos = is_pos + prob_pos_word[test_set[index][j]]
             print(is_pos)
         print("final", is_pos)
         for j in range(len(test_set[index])): #negative probability
-            is_neg = is_neg + positive(test_set[index][j], vocabulary, neg)
+            is_neg = is_neg + prob_neg_word[test_set[index][j]]
             print(is_pos)
         print("final", is_neg)
         for j in range(len(test_set[index])): #neutral probability
-            is_neu = is_neu + positive(test_set[index][j], vocabulary, neu)
+            is_neu = is_neu + prob_neu_word[test_set[index][j]]
             print(is_pos)
         print("final", is_neu)
 
-        classification = min(is_pos, is_neg, is_neu) # classification based on trained set
+        classification = max(is_pos, is_neg, is_neu) # classification based on trained set
 
         matrix(mat_1, mat_2, mat_3, t[i][1], classification) # put it in confusion matrix
         print("done")
