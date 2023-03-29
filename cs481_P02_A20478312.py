@@ -3,7 +3,7 @@ import sys
 import nltk
 from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import CountVectorizer
-#import string
+import math
 
 t = []
 
@@ -66,7 +66,7 @@ def positive(word, voca, pos): #input every positive (word, vocabulary, sentence
     for i in range(len(bag_of_words)):
         if bag_of_words[i][word] == 1:
             num+=1
-    return num/pos_count
+    return math.log(num/pos_count)
 
 def negative(word, voca, neg):
     bag_of_words = []
@@ -79,7 +79,7 @@ def negative(word, voca, neg):
     for i in range(len(bag_of_words)):
         if bag_of_words[i][word] == 1:
             num+=1
-    return num/neg_count
+    return math.log(num/neg_count)
 
 def neutral(word, voca, neu):
     bag_of_words = []
@@ -92,7 +92,7 @@ def neutral(word, voca, neu):
     for i in range(len(bag_of_words)):
         if bag_of_words[i][word] == 1:
             num+=1
-    return num/neu_count
+    return math.log(num/neu_count)
 
 def matrix(mat_1, mat_2, mat_3, real_value, classified_value):
     if classified_value =='positive':
@@ -146,24 +146,46 @@ def main():
     prob_neg = len(neg)/len(train_set)
     prob_neu = len(neu)/len(train_set)
 
+    prob_pos_word = {}
+    prob_neg_word = {}
+    prob_neu_word = {}
+
+    for i in range(len(vocabulary)): # store probabilities
+        prob_pos_word[vocabulary[i]] = (positive(vocabulary[i], vocabulary, pos))
+        prob_neg_word[vocabulary[i]] = (positive(vocabulary[i], vocabulary, neg))
+        prob_neu_word[vocabulary[i]] = (positive(vocabulary[i], vocabulary, neu))
+
     for i in range(boundary+1, len(t)):
         cleaned_test = preprocessStop(preprocessStem(preprocessLC(t[i][10])))
         test_set.append(cleaned_test)
-    for i in range(boundary+1, len(t)): # test set tesing  len(t)
-        is_pos = prob_pos
-        is_neg = prob_neg
-        is_neu = prob_neu
+    print("training set done")
+
+    for i in range(boundary+1, boundary+21): # test set tesing  len(t)
+        is_pos = math.log(prob_pos)
+        is_neg = math.log(prob_neg)
+        is_neu = math.log(prob_neu)
         index = i-1-boundary
         for j in range(len(test_set[index])): #positive probability
-            is_pos = is_pos * positive(test_set[index][j], vocabulary, pos)
+            is_pos = is_pos + positive(test_set[index][j], vocabulary, pos)
+            print(is_pos)
+        print("final", is_pos)
         for j in range(len(test_set[index])): #negative probability
-            is_neg = is_neg * positive(test_set[index][j], vocabulary, neg)
+            is_neg = is_neg + positive(test_set[index][j], vocabulary, neg)
+            print(is_pos)
+        print("final", is_neg)
         for j in range(len(test_set[index])): #neutral probability
-            is_neu = is_neu * positive(test_set[index][j], vocabulary, neu)
+            is_neu = is_neu + positive(test_set[index][j], vocabulary, neu)
+            print(is_pos)
+        print("final", is_neu)
 
-        classification = max(is_pos, is_neg, is_neu) # classification based on trained set
+        classification = min(is_pos, is_neg, is_neu) # classification based on trained set
 
         matrix(mat_1, mat_2, mat_3, t[i][1], classification) # put it in confusion matrix
+        print("done")
+        print(mat_0)
+        print(mat_1)
+        print(mat_2)
+        print(mat_3)
     
     print(mat_0)
     print(mat_1)
