@@ -38,29 +38,18 @@ def preprocessStop(text): #stopwords
     return filtered_text
 
 def cleanText(text): #clean text before partitioning based on command line input
-    # if len(sys.argv) > 1:
-    #     n = sys.argv[1]
-    #     for i in range(1, len(t)-1):
-    #         if n == "NO" or n == "IGNORE":
-    #             clean_text = preprocessStop(preprocessStem(preprocessLC(text)))
-    #             return
-    #         elif n == "YES":
-    #             clean_text = preprocessStop(preprocessLC(text))
-    #             return
-    #         else:
-    #             print("Invalid command-line argument provided.")
-    #             return 1
-    # else:
-    #     printed = False
-    #     for i in range(1, len(t) - 1):
-    #         clean_text = preprocessStop(preprocessStem(preprocessLC(text)))
-    #         # if not printed:
-    #         #     print("No command-line argument provided. Defaulting to NO.")
-    #         #     printed = True
-    #     return clean_text
-        
-    clean_text = preprocessStop(preprocessStem(preprocessLC(text)))
-    return clean_text
+    for i in range(1, len(t)-1):
+        if len(sys.argv) > 1:
+            n = sys.argv[1]
+            if n == "YES":
+                clean_text = preprocessStop(preprocessLC(text))
+                return clean_text
+            else:
+                clean_text = preprocessStop(preprocessStem(preprocessLC(text)))
+                return clean_text
+        else:
+        clean_text = preprocessStop(preprocessStem(preprocessLC(text)))
+        return clean_text
 
 def vocabb(text): #extracting vocab list from training set(text)
     vocab = []
