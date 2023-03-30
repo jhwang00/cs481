@@ -84,24 +84,24 @@ def neutral(word, voca, bag_of_words, neu_count):
     return math.log(num/smoothing)
 
 def matrix(mat_1, mat_2, mat_3, real_value, classified_value):
-    if classified_value =='positive':
-        if real_value == 'positive':
+    if real_value =='positive':
+        if classified_value == 'positive':
             mat_1[1] += 1
-        elif real_value == 'negative':
+        elif classified_value == 'negative':
             mat_1[2] += 1
         else:
             mat_1[3] += 1
-    elif classified_value == 'negative':
-        if real_value == 'positive':
+    elif real_value == 'negative':
+        if classified_value == 'positive':
             mat_2[1] += 1
-        elif real_value == 'negative':
+        elif classified_value == 'negative':
             mat_2[2] += 1
         else:
             mat_2[3] += 1
     else:
-        if real_value == 'positive':
+        if classified_value == 'positive':
             mat_3[1] += 1
-        elif real_value == 'negative':
+        elif classified_value == 'negative':
             mat_3[2] += 1
         else:
             mat_3[3] += 1
@@ -115,7 +115,7 @@ def main():
     neu = []
     neg = []
 
-    mat_0 = ["system\\real", "positive", "negative", "neutral"]
+    mat_0 = ["real\predicted", "positive", "negative", "neutral"]
     mat_1 = ["positive", 0, 0, 0]
     mat_2 = ["negative", 0, 0, 0]
     mat_3 = ["neutral", 0, 0, 0]
@@ -177,7 +177,7 @@ def main():
         prob_neg_word[vocabulary[i]] = (negative(vocabulary[i], vocabulary, neg_bag_of_words, neg_count))
         prob_neu_word[vocabulary[i]] = (neutral(vocabulary[i], vocabulary, neu_bag_of_words, neu_count))
 #probabilty of word done
-    print("probability done\n")
+    print("probability done\ntraining done\n")
 
     for i in range(boundary+1, len(t)):
         cleaned_test = preprocessStop(preprocessStem(preprocessLC(t[i][10])))
@@ -187,7 +187,7 @@ def main():
     print("test set: ", len(test_set))
     print()
 
-######################################################
+
     for i in range(boundary+1, len(t)): # test set tesing  len(t)
         is_pos = math.log(prob_pos)
         is_neg = math.log(prob_neg)
@@ -212,20 +212,87 @@ def main():
             matrix(mat_1, mat_2, mat_3, t[i][1], "neutral")
         
 #test done
-    print("done\n")
+    print("Jungwoo, Hwang, A20478312 solution:")
+    print()
+#preprocessing step ignore or not
+    print("Test results / metircs: ")
     print(mat_0)
     print(mat_1)
     print(mat_2)
     print(mat_3)
-    print("\n")
-        #compare with real value
-        #if TP, TN, FP, FN
-        #calculate recall, specificity, etc
 
-        #keyboard input(single sentence)
+    pos_tp = mat_1[1]
+    pos_tn = mat_2[2]+mat_2[3]+mat_3[2]+mat_3[3]
+    pos_fp = mat_2[1]+mat_3[1]
+    pos_fn = mat_1[2]+mat_1[3]
+    pos_sen = pos_tp/(pos_tp+pos_fn)
+    pos_spe = pos_tn/(pos_tn+pos_fp)
+    pos_pre = pos_tp/(pos_tp+pos_fp)
+    pos_pv = pos_tn/(pos_tn+pos_fn)
+    pos_acc = (pos_tp+pos_tn)/(pos_tp+pos_tn+pos_fp+pos_fn)
+    pos_fs = pos_tp/(pos_tp+0.5*(pos_fp+pos_fn))
+
+    neg_tp = mat_2[2]
+    neg_tn = mat_1[1]+mat_1[3]+mat_3[1]+mat_3[3]
+    neg_fp = mat_1[2]+mat_3[2]
+    neg_fn = mat_2[1]+mat_2[3]
+    neg_sen = neg_tp/(neg_tp+neg_fn)
+    neg_spe = neg_tn/(neg_tn+neg_fp)
+    neg_pre = neg_tp/(neg_tp+neg_fp)
+    neg_pv = neg_tn/(neg_tn+neg_fn)
+    neg_acc = (neg_tp+neg_tn)/(neg_tp+neg_tn+neg_fp+neg_fn)
+    neg_fs = neg_tp/(neg_tp+0.5*(neg_fp+neg_fn))
+
+    neu_tp = mat_3[3]
+    neu_tn = mat_1[1]+mat_1[2]+mat_2[1]+mat_2[2]
+    neu_fp = mat_1[3]+mat_2[3]
+    neu_fn = mat_3[1]+mat_3[2]
+    neu_sen = neu_tp/(neu_tp+neu_fn)
+    neu_spe = neu_tn/(neu_tn+neu_fp)
+    neu_pre = neu_tp/(neu_tp+neu_fp)
+    neu_pv = neu_tn/(neu_tn+neu_fn)
+    neu_acc = (neu_tp+neu_tn)/(neu_tp+neu_tn+neu_fp+neu_fn)
+    neu_fs = neu_tp/(neu_tp+0.5*(neu_fp+neu_fn))
     
+    print("\n   Positive / Nagative, Neutral")
+    print(f"Number of true positives: {pos_tp}")
+    print(f"Number of true negatives: {pos_tn}")
+    print(f"Number of false positives: {pos_fp}")
+    print(f"Number of false negatives: {pos_fn}")
+    print(f"Sensitivity: {pos_sen}")
+    print(f"Specificity: {pos_spe}")
+    print(f"Precision: {pos_pre}")
+    print(f"Negative predictive value: {pos_pv}")
+    print(f"Accuracy: {pos_acc}")
+    print(f"F-score: {pos_fs}")
 
-#06~
+    print("\n   Nagative / Positive, Neutral")
+    print(f"Number of true positives: {neg_tp}")
+    print(f"Number of true negatives: {neg_tn}")
+    print(f"Number of false positives: {neg_fp}")
+    print(f"Number of false negatives: {neg_fn}")
+    print(f"Sensitivity: {neg_sen}")
+    print(f"Specificity: {neg_spe}")
+    print(f"Precision: {neg_pre}")
+    print(f"Negative predictive value: {neg_pv}")
+    print(f"Accuracy: {neg_acc}")
+    print(f"F-score: {neg_fs}")
+    
+    print("\n   Neutral / Positive, Nagative")
+    print(f"Number of true positives: {neu_tp}")
+    print(f"Number of true negatives: {neu_tn}")
+    print(f"Number of false positives: {neu_fp}")
+    print(f"Number of false negatives: {neu_fn}")
+    print(f"Sensitivity: {neu_sen}")
+    print(f"Specificity: {neu_spe}")
+    print(f"Precision: {neu_pre}")
+    print(f"Negative predictive value: {neu_pv}")
+    print(f"Accuracy: {neu_acc}")
+    print(f"F-score: {neu_fs}")
+
+    #input
+    
+    
 #20542 voca
 # t[0] :: column name
 # t[i][1] ::sentiment
@@ -244,4 +311,4 @@ def main():
     
 start = time.time() #measure time taken
 main()
-print("time: ", time.time()-start, " sec")
+print("\ntime: ", time.time()-start, "sec")
