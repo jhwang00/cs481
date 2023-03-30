@@ -37,6 +37,20 @@ def preprocessStop(text): #stopwords
     filtered_text = [w for w in text if not w.lower() in removal_list]
     return filtered_text
 
+def cleanText(text): #clean text before partitioning based on command line input
+    for i in range(1, len(t)-1):
+        if len(sys.argv) > 1:
+            n = sys.argv[1]
+            if n == "YES":
+                clean_text = preprocessStop(preprocessLC(text))
+                return clean_text
+            else:
+                clean_text = preprocessStop(preprocessStem(preprocessLC(text)))
+                return clean_text
+        else:
+            clean_text = preprocessStop(preprocessStem(preprocessLC(text)))
+            return clean_text
+
 def vocabb(text): #extracting vocab list from training set(text)
     vocab = []
     for i in range(len(text)):
@@ -121,7 +135,7 @@ def main():
     mat_3 = ["neutral", 0, 0, 0]
 
     for i in range(1, n):
-        cleaned_train = preprocessStop(preprocessStem(preprocessLC(t[i][10])))
+        cleaned_train = cleanText(t[i][10])
         train_set.append(cleaned_train)
     vocabulary = vocabb(train_set)
 #voca preprocess done
@@ -180,7 +194,7 @@ def main():
     print("probability done\ntraining done\n")
 
     for i in range(boundary+1, len(t)):
-        cleaned_test = preprocessStop(preprocessStem(preprocessLC(t[i][10])))
+        cleaned_test = cleanText(t[i][10])
         test_set.append(cleaned_test)
 #test set
     print("test set preprocess done")
