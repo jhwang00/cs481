@@ -1,9 +1,7 @@
 import csv
-from re import M
 import sys
 import nltk
 from nltk.corpus import stopwords
-from sklearn.feature_extraction.text import CountVectorizer
 import math
 import time
 
@@ -37,19 +35,13 @@ def preprocessStop(text): #stopwords
     filtered_text = [w for w in text if not w.lower() in removal_list]
     return filtered_text
 
-def cleanText(text): #clean text before partitioning based on command line input
-    for i in range(1, len(t)-1):
-        if len(sys.argv) > 1:
-            n = sys.argv[1]
-            if n == "YES":
-                clean_text = preprocessStop(preprocessLC(text))
-                return clean_text
-            else:
-                clean_text = preprocessStop(preprocessStem(preprocessLC(text)))
-                return clean_text
-        else:
-            clean_text = preprocessStop(preprocessStem(preprocessLC(text)))
-            return clean_text
+def cleanText(text, switch): #clean text before partitioning based on command line input
+    if switch == 1:
+        clean_text = preprocessStop(preprocessLC(text))
+        return clean_text
+    else:
+        clean_text = preprocessStop(preprocessStem(preprocessLC(text)))
+        return clean_text
 
 def vocabb(text): #extracting vocab list from training set(text)
     vocab = []
@@ -134,12 +126,25 @@ def main():
     mat_2 = ["negative", 0, 0, 0]
     mat_3 = ["neutral", 0, 0, 0]
 
+    switch = 0 #check argument to pass preprocess or not
+    if len(sys.argv) > 1:
+        inp = sys.argv[1]
+        if inp == "YES":
+            switch = 1
+#NAME, A NUMBER PREPROCESSING            
+    print("Jungwoo, Hwang, A20478312 solution:")
+    if switch == 1:
+        print("Ignored pre-processing step: STEMMING\n")
+    else:
+        print("Ignored pre-processing step: \n")
+
+    print("Training classifier...")
     for i in range(1, n):
-        cleaned_train = cleanText(t[i][10])
+        cleaned_train = cleanText(t[i][10], switch)
         train_set.append(cleaned_train)
     vocabulary = vocabb(train_set)
 #voca preprocess done
-    print("voca done\n")
+#    print("voca done\n")
 
     for i in range(len(train_set)):
         if t[i][1] == 'positive': #2003
@@ -149,11 +154,11 @@ def main():
         else: #2618
             neu.append(train_set[i])
 #classify done
-    print("train set: ", len(train_set))
-    print("positive: ", len(pos))
-    print("negative: ", len(neg))
-    print("neutral: ", len(neu))
-    print("classification done\n")
+#    print("train set: ", len(train_set))
+#    print("positive: ", len(pos))
+#    print("negative: ", len(neg))
+#    print("neutral: ", len(neu))
+#    print("classification done\n")
 
     prob_pos = len(pos)/len(train_set) #probability of pos/neg/neu
     prob_neg = len(neg)/len(train_set)
@@ -184,22 +189,24 @@ def main():
         neu_bag_of_words.append(nn[0])
         neu_count += nn[1]
 #bow done
-    print("bag of words done\n")
+#    print("bag of words done\n")
 
     for i in range(len(vocabulary)): # store probabilities
         prob_pos_word[vocabulary[i]] = (positive(vocabulary[i], vocabulary, pos_bag_of_words, pos_count))
         prob_neg_word[vocabulary[i]] = (negative(vocabulary[i], vocabulary, neg_bag_of_words, neg_count))
         prob_neu_word[vocabulary[i]] = (neutral(vocabulary[i], vocabulary, neu_bag_of_words, neu_count))
 #probabilty of word done
-    print("probability done\ntraining done\n")
+#    print("probability done\ntraining done\n")
+
+    print("Testing classifier...")
 
     for i in range(boundary+1, len(t)):
-        cleaned_test = cleanText(t[i][10])
+        cleaned_test = cleanText(t[i][10], switch)
         test_set.append(cleaned_test)
 #test set
-    print("test set preprocess done")
-    print("test set: ", len(test_set))
-    print()
+#    print("test set preprocess done")
+#    print("test set: ", len(test_set))
+#    print()
 
 
     for i in range(boundary+1, len(t)): # test set tesing  len(t)
@@ -226,9 +233,6 @@ def main():
             matrix(mat_1, mat_2, mat_3, t[i][1], "neutral")
         
 #test done
-    print("Jungwoo, Hwang, A20478312 solution:")
-    print()
-#preprocessing step ignore or not
     print("Test results / metircs: ")
     print(mat_0)
     print(mat_1)
@@ -268,7 +272,7 @@ def main():
     neu_acc = (neu_tp+neu_tn)/(neu_tp+neu_tn+neu_fp+neu_fn)
     neu_fs = neu_tp/(neu_tp+0.5*(neu_fp+neu_fn))
     
-    print("\n   Positive / Nagative, Neutral")
+    print("\n   Positive / Negative, Neutral")
     print(f"Number of true positives: {pos_tp}")
     print(f"Number of true negatives: {pos_tn}")
     print(f"Number of false positives: {pos_fp}")
@@ -280,7 +284,7 @@ def main():
     print(f"Accuracy: {pos_acc}")
     print(f"F-score: {pos_fs}")
 
-    print("\n   Nagative / Positive, Neutral")
+    print("\n   Negative / Positive, Neutral")
     print(f"Number of true positives: {neg_tp}")
     print(f"Number of true negatives: {neg_tn}")
     print(f"Number of false positives: {neg_fp}")
@@ -292,7 +296,7 @@ def main():
     print(f"Accuracy: {neg_acc}")
     print(f"F-score: {neg_fs}")
     
-    print("\n   Neutral / Positive, Nagative")
+    print("\n   Neutral / Positive, Negative")
     print(f"Number of true positives: {neu_tp}")
     print(f"Number of true negatives: {neu_tn}")
     print(f"Number of false positives: {neu_fp}")
@@ -302,9 +306,15 @@ def main():
     print(f"Precision: {neu_pre}")
     print(f"Negative predictive value: {neu_pv}")
     print(f"Accuracy: {neu_acc}")
-    print(f"F-score: {neu_fs}")
+    print(f"F-score: {neu_fs}\n")
 
-    #input
+    userInput = (input("Enter your sentence: "))
+    print(f"\n Sentence S: \n\n{userInput}\n")
+    
+    #classifying process
+    #print(f"was classified as {}")
+
+
     
     
 #20542 voca
