@@ -1,9 +1,11 @@
 import csv
+from re import M
 import sys
 import nltk
 from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import CountVectorizer
 import math
+import time
 
 t = []
 
@@ -45,6 +47,7 @@ def vocabb(text): #extracting vocab list from training set(text)
 
 def bow(voca, sentence):
     dict = {}
+    count = 0
     for j in range(len(voca)):
         exists = 0
         if voca[j] in sentence:
@@ -53,46 +56,32 @@ def bow(voca, sentence):
             dict[voca[j]] = 0
         else:
             dict[voca[j]] = 1 
-    return dict
+            count += 1
+    return [dict, count]
 
-def positive(word, voca, pos): #input every positive (word, vocabulary, sentence list) returns p(word|pos)
-    bag_of_words = []
-    for i in range(len(pos)):
-        bag_of_words.append(bow(voca, pos[i]))
-    pos_count = len(voca)
-    for i in range(len(pos)):
-        pos_count += len(pos[i])
+def positive(word, voca, bag_of_words, pos_count): #input every positive (word, vocabulary, sentence list) returns p(word|pos)
+    smoothing = len(voca) + pos_count
     num = 1
     for i in range(len(bag_of_words)):
         if bag_of_words[i][word] == 1:
             num+=1
-    return math.log(num/pos_count)
+    return math.log(num/smoothing)
 
-def negative(word, voca, neg):
-    bag_of_words = []
-    for i in range(len(neg)):
-        bag_of_words.append(bow(voca, neg[i]))
-    neg_count = 0
-    for i in range(len(neg)):
-        neg_count += len(neg[i])
+def negative(word, voca, bag_of_words, neg_count):
+    smoothing = len(voca) + neg_count
     num = 1
     for i in range(len(bag_of_words)):
         if bag_of_words[i][word] == 1:
             num+=1
-    return math.log(num/neg_count)
+    return math.log(num/smoothing)
 
-def neutral(word, voca, neu):
-    bag_of_words = []
-    for i in range(len(neu)):
-        bag_of_words.append(bow(voca, neu[i]))
-    neu_count = 0    
-    for i in range(len(neu)):
-        neu_count += len(neu[i])
+def neutral(word, voca, bag_of_words, neu_count):
+    smoothing = len(voca) + neu_count
     num = 1
     for i in range(len(bag_of_words)):
         if bag_of_words[i][word] == 1:
             num+=1
-    return math.log(num/neu_count)
+    return math.log(num/smoothing)
 
 def matrix(mat_1, mat_2, mat_3, real_value, classified_value):
     if classified_value =='positive':
@@ -135,62 +124,100 @@ def main():
         cleaned_train = preprocessStop(preprocessStem(preprocessLC(t[i][10])))
         train_set.append(cleaned_train)
     vocabulary = vocabb(train_set)
-    for i in range(1, n):
-        if t[i][1] == 'positive':
-            pos.append(cleaned_train)
-        elif t[i][1] == 'negative':
-            neg.append(cleaned_train)
-        else:
-            neu.append(cleaned_train)
-    prob_pos = len(pos)/len(train_set)
+#voca preprocess done
+    print("voca done\n")
+
+    for i in range(len(train_set)):
+        if t[i][1] == 'positive': #2003
+            pos.append(train_set[i])
+        elif t[i][1] == 'negative': #7090
+            neg.append(train_set[i])
+        else: #2618
+            neu.append(train_set[i])
+#classify done
+    print("train set: ", len(train_set))
+    print("positive: ", len(pos))
+    print("negative: ", len(neg))
+    print("neutral: ", len(neu))
+    print("classification done\n")
+
+    prob_pos = len(pos)/len(train_set) #probability of pos/neg/neu
     prob_neg = len(neg)/len(train_set)
     prob_neu = len(neu)/len(train_set)
 
-    prob_pos_word = {}
+    prob_pos_word = {} #probability of each word given pos/neg/neu
     prob_neg_word = {}
     prob_neu_word = {}
 
+    pos_bag_of_words = [] # bag of words for pos/neg/neu
+    neg_bag_of_words = []
+    neu_bag_of_words = []
+
+    pos_count = 0 # count(x, y) denominator
+    neg_count = 0
+    neu_count = 0
+
+    for i in range(len(pos)):
+        p = bow(vocabulary, pos[i])
+        pos_bag_of_words.append(p[0])
+        pos_count += p[1]
+    for i in range(len(pos)):
+        n = bow(vocabulary, neg[i])
+        neg_bag_of_words.append(n[0])
+        neg_count += n[1]
+    for i in range(len(pos)):
+        nn = p = bow(vocabulary, neu[i])
+        neu_bag_of_words.append(nn[0])
+        neu_count += nn[1]
+#bow done
+    print("bag of words done\n")
+
     for i in range(len(vocabulary)): # store probabilities
-        prob_pos_word[vocabulary[i]] = (positive(vocabulary[i], vocabulary, pos))
-        prob_neg_word[vocabulary[i]] = (positive(vocabulary[i], vocabulary, neg))
-        prob_neu_word[vocabulary[i]] = (positive(vocabulary[i], vocabulary, neu))
+        prob_pos_word[vocabulary[i]] = (positive(vocabulary[i], vocabulary, pos_bag_of_words, pos_count))
+        prob_neg_word[vocabulary[i]] = (negative(vocabulary[i], vocabulary, neg_bag_of_words, neg_count))
+        prob_neu_word[vocabulary[i]] = (neutral(vocabulary[i], vocabulary, neu_bag_of_words, neu_count))
+#probabilty of word done
+    print("probability done\n")
 
     for i in range(boundary+1, len(t)):
         cleaned_test = preprocessStop(preprocessStem(preprocessLC(t[i][10])))
         test_set.append(cleaned_test)
-    print("training set done")
+#test set
+    print("test set preprocess done")
+    print("test set: ", len(test_set))
+    print()
 
-    for i in range(boundary+1, boundary+21): # test set tesing  len(t)
+######################################################
+    for i in range(boundary+1, len(t)): # test set tesing  len(t)
         is_pos = math.log(prob_pos)
         is_neg = math.log(prob_neg)
         is_neu = math.log(prob_neu)
         index = i-1-boundary
         for j in range(len(test_set[index])): #positive probability
-            is_pos = is_pos + prob_pos_word[test_set[index][j]]
-            print(is_pos)
-        print("final", is_pos)
+            if test_set[index][j] in vocabulary:
+                is_pos = is_pos + prob_pos_word[test_set[index][j]]
         for j in range(len(test_set[index])): #negative probability
-            is_neg = is_neg + prob_neg_word[test_set[index][j]]
-            print(is_pos)
-        print("final", is_neg)
+            if test_set[index][j] in vocabulary:
+                is_neg = is_neg + prob_neg_word[test_set[index][j]]
         for j in range(len(test_set[index])): #neutral probability
-            is_neu = is_neu + prob_neu_word[test_set[index][j]]
-            print(is_pos)
-        print("final", is_neu)
-
+            if test_set[index][j] in vocabulary:
+                is_neu = is_neu + prob_neu_word[test_set[index][j]]
         classification = max(is_pos, is_neg, is_neu) # classification based on trained set
-
-        matrix(mat_1, mat_2, mat_3, t[i][1], classification) # put it in confusion matrix
-        print("done")
-        print(mat_0)
-        print(mat_1)
-        print(mat_2)
-        print(mat_3)
-    
+#checking classified value 
+        if classification == is_pos:
+            matrix(mat_1, mat_2, mat_3, t[i][1], "positive") # put it in confusion matrix
+        elif classification == is_neg:
+            matrix(mat_1, mat_2, mat_3, t[i][1], "negative")
+        else:
+            matrix(mat_1, mat_2, mat_3, t[i][1], "neutral")
+        
+#test done
+    print("done\n")
     print(mat_0)
     print(mat_1)
     print(mat_2)
     print(mat_3)
+    print("\n")
         #compare with real value
         #if TP, TN, FP, FN
         #calculate recall, specificity, etc
@@ -198,18 +225,12 @@ def main():
         #keyboard input(single sentence)
     
 
-#positive
-#negative
-#neutral
+#06~
+#20542 voca
 # t[0] :: column name
 # t[i][1] ::sentiment
 # t[i][10] ::text
     
-
-    #preprocess
-    #train based on t[i][1]::sentiment
-    #train
-    #
 
     #print(l)
     #print(preprocessStop(l))
@@ -221,5 +242,6 @@ def main():
     #    pass # skip stemming
     #    print("\nERROR: Not enough or too many input arguments.\n")
     
-
+start = time.time() #measure time taken
 main()
+print("time: ", time.time()-start, " sec")
