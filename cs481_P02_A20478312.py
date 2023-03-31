@@ -112,10 +112,10 @@ def matrix(mat_1, mat_2, mat_3, real_value, classified_value):
         else:
             mat_3[3] += 1
 
-def sentence_input(prob_pos_word, prob_neg_word, prob_neu_word, prob_pos, prob_neg, prob_neu, vocabulary):
+def sentence_input(prob_pos_word, prob_neg_word, prob_neu_word, prob_pos, prob_neg, prob_neu, vocabulary, switch):
     userInput = (input("Enter your sentence: "))
     print(f"\n Sentence S: \n\n{userInput}\n")
-    cleaned = cleanText(userInput, 0)
+    cleaned = cleanText(userInput, switch)
     is_pos = math.log(prob_pos)
     is_neg = math.log(prob_neg)
     is_neu = math.log(prob_neu)
@@ -140,9 +140,11 @@ def sentence_input(prob_pos_word, prob_neg_word, prob_neu_word, prob_pos, prob_n
     print(f"P(neutral | S) = {math.exp(is_neu)}")
     userInput = (input("\nDo you want to enter another sentence [Y/N]?"))
     if userInput == 'Y':
-        sentence_input(prob_pos_word, prob_neg_word, prob_neu_word, prob_pos, prob_neg, prob_neu, vocabulary)
-    else:
+        sentence_input(prob_pos_word, prob_neg_word, prob_neu_word, prob_pos, prob_neg, prob_neu, vocabulary, switch)
+    elif userInput == 'N':
         return
+    else:
+        sentence_input(prob_pos_word, prob_neg_word, prob_neu_word, prob_pos, prob_neg, prob_neu, vocabulary, switch)
 
 def main():
     n = int((len(t)-1)*80/100)
@@ -163,6 +165,7 @@ def main():
         inp = sys.argv[1]
         if inp == "YES":
             switch = 1
+
 #NAME, A NUMBER PREPROCESSING            
     print("\nJungwoo, Hwang, A20478312 solution:")
     if switch == 1:
@@ -340,7 +343,8 @@ def main():
     print(f"Accuracy: {neu_acc}")
     print(f"F-score: {neu_fs}\n")
 
-    sentence_input(prob_pos_word, prob_neg_word, prob_neu_word, prob_pos, prob_neg, prob_neu, vocabulary)
+    sentence_input(prob_pos_word, prob_neg_word, prob_neu_word, prob_pos, prob_neg, prob_neu, vocabulary, switch)
+
     
 #start = time.time() #measure time taken
 main()
