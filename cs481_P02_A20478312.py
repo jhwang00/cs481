@@ -1,7 +1,9 @@
 import csv
+from re import M
 import sys
 import nltk
 from nltk.corpus import stopwords
+from sklearn.feature_extraction.text import CountVectorizer
 import math
 import time
 
@@ -112,6 +114,38 @@ def matrix(mat_1, mat_2, mat_3, real_value, classified_value):
         else:
             mat_3[3] += 1
 
+def sentence_input(prob_pos_word, prob_neg_word, prob_neu_word, prob_pos, prob_neg, prob_neu, vocabulary):
+    userInput = (input("Enter your sentence: "))
+    print(f"\n Sentence S: \n\n{userInput}\n")
+    cleaned = cleanText(userInput, 0)
+    is_pos = math.log(prob_pos)
+    is_neg = math.log(prob_neg)
+    is_neu = math.log(prob_neu)
+    for j in range(len(cleaned)): #positive probability
+        if cleaned[j] in vocabulary:
+            is_pos = is_pos + prob_pos_word[cleaned[j]]
+    for j in range(len(cleaned)): #negative probability
+        if cleaned[j] in vocabulary:
+            is_neg = is_neg + prob_neg_word[cleaned[j]]
+    for j in range(len(cleaned)): #neutral probability
+        if cleaned[j] in vocabulary:
+            is_neu = is_neu + prob_neu_word[cleaned[j]]
+    if max(is_pos, is_neg, is_neu) == is_pos:# classification based on trained set
+        classification = "positive"
+    elif max(is_pos, is_neg, is_neu) == is_neg:
+        classification = "negative"
+    else:
+        classification = "neutral"
+    print(f"was classified as {classification}.")
+    print(f"P(positive | S) = {math.exp(is_pos)}")
+    print(f"P(negative | S) = {math.exp(is_neg)}")
+    print(f"P(neutral | S) = {math.exp(is_neu)}")
+    userInput = (input("\nDo you want to enter another sentence [Y/N]?"))
+    if userInput == 'Y':
+        sentence_input(prob_pos_word, prob_neg_word, prob_neu_word, prob_pos, prob_neg, prob_neu, vocabulary)
+    else:
+        return
+
 def main():
     n = int((len(t)-1)*80/100)
     boundary = int((len(t)-1)*80/100)
@@ -132,7 +166,7 @@ def main():
         if inp == "YES":
             switch = 1
 #NAME, A NUMBER PREPROCESSING            
-    print("Jungwoo, Hwang, A20478312 solution:")
+    print("\nJungwoo, Hwang, A20478312 solution:")
     if switch == 1:
         print("Ignored pre-processing step: STEMMING\n")
     else:
@@ -308,31 +342,8 @@ def main():
     print(f"Accuracy: {neu_acc}")
     print(f"F-score: {neu_fs}\n")
 
-    userInput = (input("Enter your sentence: "))
-    print(f"\n Sentence S: \n\n{userInput}\n")
+    sentence_input(prob_pos_word, prob_neg_word, prob_neu_word, prob_pos, prob_neg, prob_neu, vocabulary)
     
-    #classifying process
-    #print(f"was classified as {}")
-
-
-    
-    
-#20542 voca
-# t[0] :: column name
-# t[i][1] ::sentiment
-# t[i][10] ::text
-    
-
-    #print(l)
-    #print(preprocessStop(l))
-    #try:
-    #    arg = sys.argv[1]
-    #    if arg == 'NO':
-    #        pass # do stemming
-    #except:
-    #    pass # skip stemming
-    #    print("\nERROR: Not enough or too many input arguments.\n")
-    
-start = time.time() #measure time taken
+#start = time.time() #measure time taken
 main()
-print("\ntime: ", time.time()-start, "sec")
+#print("\ntime: ", time.time()-start, "sec")
