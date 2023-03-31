@@ -1,9 +1,7 @@
 import csv
-from re import M
 import sys
 import nltk
 from nltk.corpus import stopwords
-from sklearn.feature_extraction.text import CountVectorizer
 import math
 import time
 
