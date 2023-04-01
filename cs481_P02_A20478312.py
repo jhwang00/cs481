@@ -4,6 +4,7 @@ import nltk
 from nltk.corpus import stopwords
 import math
 import time
+import matplotlib.pyplot as plt
 
 t = []
 
@@ -138,13 +139,16 @@ def sentence_input(prob_pos_word, prob_neg_word, prob_neu_word, prob_pos, prob_n
     print(f"P(positive | S) = {math.exp(is_pos)}")
     print(f"P(negative | S) = {math.exp(is_neg)}")
     print(f"P(neutral | S) = {math.exp(is_neu)}")
+    ask(prob_pos_word, prob_neg_word, prob_neu_word, prob_pos, prob_neg, prob_neu, vocabulary, switch)
+
+def ask(prob_pos_word, prob_neg_word, prob_neu_word, prob_pos, prob_neg, prob_neu, vocabulary, switch):
     userInput = (input("\nDo you want to enter another sentence [Y/N]?"))
     if userInput == 'Y':
         sentence_input(prob_pos_word, prob_neg_word, prob_neu_word, prob_pos, prob_neg, prob_neu, vocabulary, switch)
     elif userInput == 'N':
         return
     else:
-        sentence_input(prob_pos_word, prob_neg_word, prob_neu_word, prob_pos, prob_neg, prob_neu, vocabulary, switch)
+        ask(prob_pos_word, prob_neg_word, prob_neu_word, prob_pos, prob_neg, prob_neu, vocabulary, switch)
 
 def main():
     n = int((len(t)-1)*80/100)
@@ -342,6 +346,52 @@ def main():
     print(f"Negative predictive value: {neu_pv}")
     print(f"Accuracy: {neu_acc}")
     print(f"F-score: {neu_fs}\n")
+
+    print(pos_fp/100)
+    print(neg_fp/100)
+    print(neu_fp/100)
+
+    plt.figure()
+    lw = 2
+    false_positive_rate = pos_fp/(pos_fp+pos_tn) # get actual numberfrom your results
+    true_positive_rate =  pos_tp/(pos_tp+pos_fn)# get actual number from your results
+    plt.plot([0, false_positive_rate, 1], [0, true_positive_rate, 1], color='darkorange', lw=lw, label='ROC curve')
+    plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('ROC (Receiver operating characteristic) curve Positive / Negative, Neutral')
+    plt.legend(loc="lower right")
+    plt.show()
+
+    plt.figure()
+    lw = 2
+    false_positive_rate = neg_fp/(neg_fp+neg_tn) # get actual numberfrom your results
+    true_positive_rate =  neg_tp/(neg_tp+neg_fn)# get actual number from your results
+    plt.plot([0, false_positive_rate, 1], [0, true_positive_rate, 1], color='darkorange', lw=lw, label='ROC curve')
+    plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('ROC (Receiver operating characteristic) curve Negative / Positive, Neutral')
+    plt.legend(loc="lower right")
+    plt.show()
+
+    plt.figure()
+    lw = 2
+    false_positive_rate =  neu_fp/(neu_fp+neu_tn)# get actual numberfrom your results
+    true_positive_rate = neu_tp/(neu_tp+neu_fn) # get actual number from your results
+    plt.plot([0, false_positive_rate, 1], [0, true_positive_rate, 1], color='darkorange', lw=lw, label='ROC curve')
+    plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('ROC (Receiver operating characteristic) curve Neutral / Negative, Positive')
+    plt.legend(loc="lower right")
+    plt.show()
 
     sentence_input(prob_pos_word, prob_neg_word, prob_neu_word, prob_pos, prob_neg, prob_neu, vocabulary, switch)
 
