@@ -6,6 +6,8 @@ import math
 import time
 import matplotlib.pyplot as plt
 
+import random
+
 t = []
 
 with open ('Tweets.csv', 'r', encoding='utf-8') as csv_file:
@@ -347,49 +349,27 @@ def main():
     print(f"Accuracy: {neu_acc}")
     print(f"F-score: {neu_fs}\n")
 
-    print(pos_fp/100)
-    print(neg_fp/100)
-    print(neu_fp/100)
+    print(f"Macro average: {(pos_fs+neg_fs+neu_fs)/3}")
+    print(f"Weighted average: {(pos_fs*prob_pos)+(neg_fs*prob_neg)+(neu_fs*prob_neu)}")
+    print(f"Micro average/accuracy: {(pos_tp+neg_tp+neu_tp)/((pos_tp+neg_tp+neu_tp)+((pos_fp+neg_fp+neu_fp+pos_fn+neg_fn+neu_fn)/2))}\n")
 
     plt.figure()
     lw = 2
-    false_positive_rate = pos_fp/(pos_fp+pos_tn) # get actual numberfrom your results
-    true_positive_rate =  pos_tp/(pos_tp+pos_fn)# get actual number from your results
-    plt.plot([0, false_positive_rate, 1], [0, true_positive_rate, 1], color='darkorange', lw=lw, label='ROC curve')
+    false_positive_rate0 = pos_fp/(pos_fp+pos_tn) # get actual numberfrom your results
+    true_positive_rate0 =  pos_tp/(pos_tp+pos_fn)# get actual number from your results
+    plt.plot([0, false_positive_rate0, 1], [0, true_positive_rate0, 1], color='red', lw=lw, label='Positive / Negative, Neutral')
+    false_positive_rate1 = neg_fp/(neg_fp+neg_tn) # get actual numberfrom your results
+    true_positive_rate1 =  neg_tp/(neg_tp+neg_fn)# get actual number from your results
+    plt.plot([0, false_positive_rate1, 1], [0, true_positive_rate1, 1], color='blue', lw=lw, label='Negative / Positive, Neutral')
+    false_positive_rate2 =  neu_fp/(neu_fp+neu_tn)# get actual numberfrom your results
+    true_positive_rate2 = neu_tp/(neu_tp+neu_fn) # get actual number from your results
+    plt.plot([0, false_positive_rate2, 1], [0, true_positive_rate2, 1], color='green', lw=lw, label='Neutral / Negative, Positive')
     plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
-    plt.title('ROC (Receiver operating characteristic) curve Positive / Negative, Neutral')
-    plt.legend(loc="lower right")
-    plt.show()
-
-    plt.figure()
-    lw = 2
-    false_positive_rate = neg_fp/(neg_fp+neg_tn) # get actual numberfrom your results
-    true_positive_rate =  neg_tp/(neg_tp+neg_fn)# get actual number from your results
-    plt.plot([0, false_positive_rate, 1], [0, true_positive_rate, 1], color='darkorange', lw=lw, label='ROC curve')
-    plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('ROC (Receiver operating characteristic) curve Negative / Positive, Neutral')
-    plt.legend(loc="lower right")
-    plt.show()
-
-    plt.figure()
-    lw = 2
-    false_positive_rate =  neu_fp/(neu_fp+neu_tn)# get actual numberfrom your results
-    true_positive_rate = neu_tp/(neu_tp+neu_fn) # get actual number from your results
-    plt.plot([0, false_positive_rate, 1], [0, true_positive_rate, 1], color='darkorange', lw=lw, label='ROC curve')
-    plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('ROC (Receiver operating characteristic) curve Neutral / Negative, Positive')
+    plt.title('ROC (Receiver operating characteristic) curve')
     plt.legend(loc="lower right")
     plt.show()
 
